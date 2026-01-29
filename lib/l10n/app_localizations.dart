@@ -66,6 +66,8 @@ class AppLocalizations {
       'no_feeling_data': 'No feeling score data available',
       'average_feeling': 'Average',
       'view_statistics': 'View Statistics',
+      'recent_entries': 'Recent Entries',
+      'invalid_lifespan': 'Please enter a valid lifespan (1-150)',
     },
     'zh': {
       'app_title': '生活日志',
@@ -120,6 +122,8 @@ class AppLocalizations {
       'no_feeling_data': '暂无感受得分数据',
       'average_feeling': '平均值',
       'view_statistics': '查看统计',
+      'recent_entries': '最近记录',
+      'invalid_lifespan': '请输入有效的寿命（1-150）',
     },
   };
 
@@ -180,6 +184,8 @@ class AppLocalizations {
   String get noFeelingData => translate('no_feeling_data');
   String get averageFeeling => translate('average_feeling');
   String get viewStatistics => translate('view_statistics');
+  String get recentEntries => translate('recent_entries');
+  String get invalidLifespan => translate('invalid_lifespan');
 }
 
 class _AppLocalizationsDelegate

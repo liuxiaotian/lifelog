@@ -158,7 +158,6 @@ class _EpitaphSettingsScreenState extends State<EpitaphSettingsScreen> {
                 decoration: InputDecoration(
                   labelText: l10n.expectedLifespan,
                   border: const OutlineInputBorder(),
-                  suffixText: l10n.translate('expected_lifespan').contains('years') ? '' : 'years',
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
@@ -168,7 +167,7 @@ class _EpitaphSettingsScreenState extends State<EpitaphSettingsScreen> {
                     }
                     final lifespan = int.tryParse(value);
                     if (lifespan == null || lifespan <= 0 || lifespan > 150) {
-                      return 'Please enter a valid lifespan (1-150)';
+                      return l10n.invalidLifespan;
                     }
                   }
                   return null;

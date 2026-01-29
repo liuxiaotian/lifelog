@@ -4,6 +4,7 @@ import 'dart:io';
 import '../l10n/app_localizations.dart';
 import '../models/log_entry.dart';
 import '../services/storage_service.dart';
+import '../utils/feeling_score_utils.dart';
 import 'add_entry_screen.dart';
 import 'settings_screen.dart';
 import '../widgets/timeline_view.dart';
@@ -97,17 +98,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return videoExtensions.any((ext) => lowercasePath.endsWith(ext));
   }
 
-  Color _getColorForScore(int score) {
-    // Red for low scores (1-3), Orange for medium (4-7), Green for high (8-10)
-    if (score <= 3) {
-      return Colors.red;
-    } else if (score <= 7) {
-      return Colors.orange;
-    } else {
-      return Colors.green;
-    }
-  }
-
   void _showEntryDetails(LogEntry entry) {
     final l10n = AppLocalizations.of(context);
     showDialog(
@@ -146,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: _getColorForScore(entry.feelingScore!),
+                        color: FeelingScoreUtils.getColorForScore(entry.feelingScore!),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(

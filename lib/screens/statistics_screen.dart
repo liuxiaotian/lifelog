@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 import '../models/log_entry.dart';
 import '../services/storage_service.dart';
+import '../utils/feeling_score_utils.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -131,7 +132,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    'Recent Entries',
+                    l10n.recentEntries,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -155,7 +156,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: _getColorForScore(entry.feelingScore ?? 5),
+                        color: FeelingScoreUtils.getColorForScore(entry.feelingScore ?? 5),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -174,17 +175,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         ],
       ),
     );
-  }
-
-  Color _getColorForScore(int score) {
-    // Red for low scores (1-3), Yellow for medium (4-7), Green for high (8-10)
-    if (score <= 3) {
-      return Colors.red;
-    } else if (score <= 7) {
-      return Colors.orange;
-    } else {
-      return Colors.green;
-    }
   }
 }
 
@@ -229,7 +219,9 @@ class FeelingCurvePainter extends CustomPainter {
     // Calculate points
     final points = <Offset>[];
     for (int i = 0; i < entries.length; i++) {
-      final x = (i / (entries.length - 1)) * size.width;
+      final x = entries.length == 1 
+          ? size.width / 2 
+          : (i / (entries.length - 1)) * size.width;
       final score = entries[i].feelingScore ?? 5;
       final y = size.height - ((score - 1) / 9 * size.height);
       points.add(Offset(x, y));
