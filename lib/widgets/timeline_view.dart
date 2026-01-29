@@ -5,11 +5,13 @@ import '../models/log_entry.dart';
 class TimelineView extends StatelessWidget {
   final List<LogEntry> entries;
   final Function(LogEntry) onEntryTap;
+  final LogEntry? epitaphEntry;
 
   const TimelineView({
     super.key,
     required this.entries,
     required this.onEntryTap,
+    this.epitaphEntry,
   });
 
   @override
@@ -26,10 +28,15 @@ class TimelineView extends StatelessWidget {
   }
 
   Widget _buildVerticalTimeline(BuildContext context) {
+    final itemCount = entries.length + (epitaphEntry != null ? 1 : 0);
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: entries.length,
+      itemCount: itemCount,
       itemBuilder: (context, index) {
+        if (epitaphEntry != null && index == entries.length) {
+          // Show epitaph at the end
+          return _buildEpitaphItem(context);
+        }
         final entry = entries[index];
         return _buildVerticalTimelineItem(context, entry, index);
       },
@@ -216,6 +223,59 @@ class TimelineView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildEpitaphItem(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+        Divider(
+          thickness: 2,
+          color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+        ),
+        const SizedBox(height: 16),
+        Card(
+          color: Theme.of(context).colorScheme.surfaceVariant,
+          elevation: 4,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      epitaphEntry!.mood,
+                      style: const TextStyle(fontSize: 40),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          DateFormat('MMM dd, yyyy').format(epitaphEntry!.timestamp),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  epitaphEntry!.event,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

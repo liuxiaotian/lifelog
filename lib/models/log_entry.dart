@@ -4,6 +4,8 @@ class LogEntry {
   final String mood;
   final String event;
   final List<String> attachments;
+  final int? feelingScore; // 1-10 scale, optional
+  final bool isEpitaph; // Flag to identify epitaph entries
 
   LogEntry({
     required this.id,
@@ -11,6 +13,8 @@ class LogEntry {
     required this.mood,
     required this.event,
     this.attachments = const [],
+    this.feelingScore,
+    this.isEpitaph = false,
   });
 
   Map<String, dynamic> toJson() {
@@ -20,6 +24,8 @@ class LogEntry {
       'mood': mood,
       'event': event,
       'attachments': attachments,
+      'feelingScore': feelingScore,
+      'isEpitaph': isEpitaph,
     };
   }
 
@@ -34,6 +40,8 @@ class LogEntry {
       attachments: json['attachments'] != null 
           ? List<String>.from(json['attachments']) 
           : [],
+      feelingScore: json['feelingScore'] as int?,
+      isEpitaph: json['isEpitaph'] as bool? ?? false,
     );
   }
 }

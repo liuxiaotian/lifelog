@@ -4,6 +4,7 @@ import 'dart:io';
 import '../l10n/app_localizations.dart';
 import '../models/log_entry.dart';
 import '../services/storage_service.dart';
+import '../utils/feeling_score_utils.dart';
 import 'add_entry_screen.dart';
 import 'settings_screen.dart';
 import '../widgets/timeline_view.dart';
@@ -21,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final StorageService _storageService = StorageService();
   List<LogEntry> _entries = [];
   bool _isLoading = true;
+  LogEntry? _epitaphEntry;
 
   @override
   void initState() {
@@ -32,8 +34,34 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _isLoading = true);
     final entries = await _storageService.getEntries();
     entries.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    
+    // Load epitaph if enabled
+    LogEntry? epitaphEntry;
+    final epitaphEnabled = await _storageService.isEpitaphEnabled();
+    if (epitaphEnabled) {
+      final birthday = await _storageService.getEpitaphBirthday();
+      final lifespan = await _storageService.getEpitaphLifespan();
+      final content = await _storageService.getEpitaphContent();
+      
+      if (birthday != null && lifespan != null && content != null && content.isNotEmpty) {
+        final expectedEndDate = DateTime(
+          birthday.year + lifespan,
+          birthday.month,
+          birthday.day,
+        );
+        epitaphEntry = LogEntry(
+          id: 'epitaph',
+          timestamp: expectedEndDate,
+          mood: '🕊️',
+          event: content,
+          isEpitaph: true,
+        );
+      }
+    }
+    
     setState(() {
       _entries = entries;
+      _epitaphEntry = epitaphEntry;
       _isLoading = false;
     });
   }
@@ -93,6 +121,35 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(entry.event),
+              if (entry.feelingScore != null) ...[
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Text(
+                      l10n.feelingScore,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: FeelingScoreUtils.getColorForScore(entry.feelingScore!),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${entry.feelingScore}/10',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               if (entry.attachments.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 Text(
@@ -216,6 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
               : TimelineView(
                   entries: _entries,
                   onEntryTap: _showEntryDetails,
+                  epitaphEntry: _epitaphEntry,
                 ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
