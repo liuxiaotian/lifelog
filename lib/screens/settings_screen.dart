@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../services/storage_service.dart';
+import '../utils/date_format_utils.dart';
 import 'epitaph_settings_screen.dart';
 import 'statistics_screen.dart';
 import 'life_highlights_screen.dart';
@@ -41,9 +42,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadTimeFormat() async {
-    final prefs = await SharedPreferences.getInstance();
+    final format = await DateFormatUtils.getTimeFormat();
     setState(() {
-      _currentTimeFormat = prefs.getString('time_format') ?? 'default';
+      _currentTimeFormat = format;
     });
   }
 
@@ -69,8 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _setTimeFormat(String format) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('time_format', format);
+    await DateFormatUtils.setTimeFormat(format);
     setState(() {
       _currentTimeFormat = format;
     });
