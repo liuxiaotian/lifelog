@@ -3,12 +3,14 @@ class LogEntry {
   final DateTime timestamp;
   final String mood;
   final String event;
+  final List<String> attachments;
 
   LogEntry({
     required this.id,
     required this.timestamp,
     required this.mood,
     required this.event,
+    this.attachments = const [],
   });
 
   Map<String, dynamic> toJson() {
@@ -17,6 +19,7 @@ class LogEntry {
       'timestamp': timestamp.toIso8601String(),
       'mood': mood,
       'event': event,
+      'attachments': attachments,
     };
   }
 
@@ -28,6 +31,9 @@ class LogEntry {
           : DateTime.now(),
       mood: json['mood']?.toString() ?? '😊',
       event: json['event']?.toString() ?? '',
+      attachments: json['attachments'] != null 
+          ? List<String>.from(json['attachments']) 
+          : [],
     );
   }
 }

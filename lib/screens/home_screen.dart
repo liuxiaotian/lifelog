@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../l10n/app_localizations.dart';
 import '../models/log_entry.dart';
 import '../services/storage_service.dart';
 import 'add_entry_screen.dart';
@@ -37,19 +38,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _deleteEntry(LogEntry entry) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Entry'),
-        content: const Text('Are you sure you want to delete this entry?'),
+        title: Text(l10n.deleteEntry),
+        content: Text(l10n.deleteEntryConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -62,6 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showEntryDetails(LogEntry entry) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -86,11 +89,11 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.pop(context);
               _deleteEntry(entry);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            child: Text(l10n.close),
           ),
         ],
       ),
@@ -99,9 +102,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('LifeLog'),
+        title: Text(l10n.appTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -133,11 +137,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'No entries yet',
+                        l10n.noEntriesYet,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
-                      const Text('Tap + to add your first log entry'),
+                      Text(l10n.tapToAdd),
                     ],
                   ),
                 )
