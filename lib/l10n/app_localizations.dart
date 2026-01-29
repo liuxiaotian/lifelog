@@ -51,26 +51,21 @@ class AppLocalizations {
       'failed_to_record_video': 'Failed to record video',
       'feeling_score': 'Feeling Score',
       'feeling_score_optional': 'Feeling Score (optional)',
-      'epitaph': 'Epitaph',
-      'epitaph_settings': 'Epitaph Settings',
-      'enable_epitaph': 'Enable Epitaph',
-      'birthday': 'Birthday',
-      'expected_lifespan': 'Expected Lifespan (years)',
-      'epitaph_content': 'Epitaph Content',
+      'epitaph': 'Life Goals',
+      'epitaph_settings': 'Life Goals Settings',
+      'enable_epitaph': 'Enable Life Goals',
+      'epitaph_content': 'Life Goals',
       'save': 'Save',
-      'please_enter_birthday': 'Please enter your birthday',
-      'please_enter_lifespan': 'Please enter expected lifespan',
-      'please_enter_epitaph': 'Please enter epitaph content',
+      'please_enter_epitaph': 'Please enter your life goals',
       'statistics': 'Statistics',
       'feeling_curve': 'Feeling Curve',
       'no_feeling_data': 'No feeling score data available',
       'average_feeling': 'Average',
       'view_statistics': 'View Statistics',
       'recent_entries': 'Recent Entries',
-      'invalid_lifespan': 'Please enter a valid lifespan (1-150)',
     },
     'zh': {
-      'app_title': '生活日志',
+      'app_title': '人生日志',
       'new_entry': '新建记录',
       'time': '时间',
       'how_are_you_feeling': '你的心情如何？',
@@ -93,7 +88,7 @@ class AppLocalizations {
       'clear_all_confirm': '确定要删除所有日志记录吗？此操作无法撤销。',
       'delete_all': '全部删除',
       'all_entries_cleared': '所有记录已清空',
-      'app_description': '一个简单的生活日志应用，用于记录时间、心情和事件。',
+      'app_description': '一个简单的人生日志应用，用于记录时间、心情和事件。',
       'built_with_flutter': '使用 Flutter 构建',
       'attachments': '附件',
       'add_attachment': '添加附件',
@@ -107,23 +102,18 @@ class AppLocalizations {
       'failed_to_record_video': '录像失败',
       'feeling_score': '感受得分',
       'feeling_score_optional': '感受得分（可选）',
-      'epitaph': '墓志铭',
-      'epitaph_settings': '墓志铭设置',
-      'enable_epitaph': '启用墓志铭',
-      'birthday': '生日',
-      'expected_lifespan': '预期寿命（年）',
-      'epitaph_content': '墓志铭内容',
+      'epitaph': '人生目标',
+      'epitaph_settings': '人生目标设置',
+      'enable_epitaph': '启用人生目标',
+      'epitaph_content': '人生目标',
       'save': '保存',
-      'please_enter_birthday': '请输入您的生日',
-      'please_enter_lifespan': '请输入预期寿命',
-      'please_enter_epitaph': '请输入墓志铭内容',
+      'please_enter_epitaph': '请输入您的人生目标',
       'statistics': '统计',
       'feeling_curve': '感受曲线',
       'no_feeling_data': '暂无感受得分数据',
       'average_feeling': '平均值',
       'view_statistics': '查看统计',
       'recent_entries': '最近记录',
-      'invalid_lifespan': '请输入有效的寿命（1-150）',
     },
   };
 
@@ -172,12 +162,8 @@ class AppLocalizations {
   String get epitaph => translate('epitaph');
   String get epitaphSettings => translate('epitaph_settings');
   String get enableEpitaph => translate('enable_epitaph');
-  String get birthday => translate('birthday');
-  String get expectedLifespan => translate('expected_lifespan');
   String get epitaphContent => translate('epitaph_content');
   String get save => translate('save');
-  String get pleaseEnterBirthday => translate('please_enter_birthday');
-  String get pleaseEnterLifespan => translate('please_enter_lifespan');
   String get pleaseEnterEpitaph => translate('please_enter_epitaph');
   String get statistics => translate('statistics');
   String get feelingCurve => translate('feeling_curve');
@@ -185,7 +171,6 @@ class AppLocalizations {
   String get averageFeeling => translate('average_feeling');
   String get viewStatistics => translate('view_statistics');
   String get recentEntries => translate('recent_entries');
-  String get invalidLifespan => translate('invalid_lifespan');
 }
 
 class _AppLocalizationsDelegate
