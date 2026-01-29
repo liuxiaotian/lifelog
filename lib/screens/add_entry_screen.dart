@@ -26,7 +26,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   final List<String> _moodEmojis = [
     // Happy & Positive
     '😊', '😃', '😄', '😁', '😆', '😂', '🤣',
-    '🥰', '😍', '🤩', '😎', '🤗', '🥳', '🤭',
+    '🥰', '😍', '🤩', '😎', '🤗', '🥳',
     // Calm & Relaxed
     '😌', '😴', '🥱', '😪', '😇', '🤓', '🧐',
     // Thinking & Curious
@@ -97,7 +97,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         maxHeight: 1080,
         imageQuality: 85,
       );
-      if (image != null) {
+      if (image != null && !_attachments.contains(image.path)) {
         setState(() {
           _attachments.add(image.path);
         });
@@ -105,7 +105,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.failedToPickImage}: $e')),
+          SnackBar(content: Text(l10n.failedToPickImage)),
         );
       }
     }
@@ -118,7 +118,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         source: ImageSource.gallery,
         maxDuration: const Duration(minutes: 5),
       );
-      if (video != null) {
+      if (video != null && !_attachments.contains(video.path)) {
         setState(() {
           _attachments.add(video.path);
         });
@@ -126,7 +126,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.failedToPickVideo}: $e')),
+          SnackBar(content: Text(l10n.failedToPickVideo)),
         );
       }
     }
@@ -141,7 +141,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         maxHeight: 1080,
         imageQuality: 85,
       );
-      if (photo != null) {
+      if (photo != null && !_attachments.contains(photo.path)) {
         setState(() {
           _attachments.add(photo.path);
         });
@@ -149,7 +149,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.failedToTakePhoto}: $e')),
+          SnackBar(content: Text(l10n.failedToTakePhoto)),
         );
       }
     }
@@ -162,7 +162,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         source: ImageSource.camera,
         maxDuration: const Duration(minutes: 5),
       );
-      if (video != null) {
+      if (video != null && !_attachments.contains(video.path)) {
         setState(() {
           _attachments.add(video.path);
         });
@@ -170,10 +170,16 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.failedToRecordVideo}: $e')),
+          SnackBar(content: Text(l10n.failedToRecordVideo)),
         );
       }
     }
+  }
+
+  bool _isVideoFile(String path) {
+    final videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.3gp', '.flv', '.wmv'];
+    final lowercasePath = path.toLowerCase();
+    return videoExtensions.any((ext) => lowercasePath.endsWith(ext));
   }
 
   void _removeAttachment(int index) {
@@ -357,9 +363,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                   itemCount: _attachments.length,
                   itemBuilder: (context, index) {
                     final path = _attachments[index];
-                    final isVideo = path.toLowerCase().endsWith('.mp4') ||
-                        path.toLowerCase().endsWith('.mov') ||
-                        path.toLowerCase().endsWith('.avi');
+                    final isVideo = _isVideoFile(path);
                     
                     return Stack(
                       children: [
@@ -404,7 +408,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                           child: IconButton(
                             icon: const Icon(Icons.close, color: Colors.red),
                             style: IconButton.styleFrom(
-                              backgroundColor: Colors.white,
+                              backgroundColor: Theme.of(context).colorScheme.surface,
                               padding: EdgeInsets.zero,
                               minimumSize: const Size(24, 24),
                             ),

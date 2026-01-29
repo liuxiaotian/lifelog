@@ -10,7 +10,7 @@ A simple life logging app built with Flutter to track moments with time, mood, a
 
 - **Add New Records**: Create log entries with:
   - Time point (customizable date and time)
-  - Mood emoji selector (63 different emojis organized by categories)
+  - Mood emoji selector (62 different emojis organized by categories)
   - Event description
   - Media attachments (photos and videos)
 

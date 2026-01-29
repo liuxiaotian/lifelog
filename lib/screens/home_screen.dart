@@ -64,6 +64,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  bool _isVideoFile(String path) {
+    final videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.3gp', '.flv', '.wmv'];
+    final lowercasePath = path.toLowerCase();
+    return videoExtensions.any((ext) => lowercasePath.endsWith(ext));
+  }
+
   void _showEntryDetails(LogEntry entry) {
     final l10n = AppLocalizations.of(context);
     showDialog(
@@ -101,9 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemCount: entry.attachments.length,
                     itemBuilder: (context, index) {
                       final path = entry.attachments[index];
-                      final isVideo = path.toLowerCase().endsWith('.mp4') ||
-                          path.toLowerCase().endsWith('.mov') ||
-                          path.toLowerCase().endsWith('.avi');
+                      final isVideo = _isVideoFile(path);
                       
                       return Container(
                         margin: const EdgeInsets.only(right: 8),
