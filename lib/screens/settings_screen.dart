@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../services/storage_service.dart';
+import '../utils/date_format_utils.dart';
 import 'epitaph_settings_screen.dart';
 import 'statistics_screen.dart';
+import 'life_highlights_screen.dart';
+import 'event_map_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final Function(ThemeMode) onThemeModeChanged;
@@ -22,17 +25,26 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final StorageService _storageService = StorageService();
   String _currentThemeMode = 'system';
+  String _currentTimeFormat = 'default';
 
   @override
   void initState() {
     super.initState();
     _loadThemeMode();
+    _loadTimeFormat();
   }
 
   Future<void> _loadThemeMode() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _currentThemeMode = prefs.getString('theme_mode') ?? 'system';
+    });
+  }
+
+  Future<void> _loadTimeFormat() async {
+    final format = await DateFormatUtils.getTimeFormat();
+    setState(() {
+      _currentTimeFormat = format;
     });
   }
 
@@ -55,6 +67,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         themeMode = ThemeMode.system;
     }
     widget.onThemeModeChanged(themeMode);
+  }
+
+  Future<void> _setTimeFormat(String format) async {
+    await DateFormatUtils.setTimeFormat(format);
+    setState(() {
+      _currentTimeFormat = format;
+    });
+    // Trigger parent refresh to update displayed times
+    widget.onClearAll();
   }
 
   Future<void> _clearAllEntries() async {
@@ -168,6 +189,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (result == true && mounted) {
                 widget.onClearAll();
               }
+            },
+          ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              l10n.timeFormat,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          RadioListTile<String>(
+            title: Text(l10n.timeFormatDefault),
+            value: 'default',
+            groupValue: _currentTimeFormat,
+            onChanged: (value) => _setTimeFormat(value!),
+          ),
+          RadioListTile<String>(
+            title: Text(l10n.timeFormatNumeric),
+            value: 'numeric',
+            groupValue: _currentTimeFormat,
+            onChanged: (value) => _setTimeFormat(value!),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.star, color: Colors.amber),
+            title: Text(l10n.lifeHighlights),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LifeHighlightsScreen(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.map),
+            title: Text(l10n.eventMap),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EventMapScreen(),
+                ),
+              );
             },
           ),
           const Divider(),

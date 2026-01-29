@@ -7,6 +7,7 @@ import '../services/storage_service.dart';
 import '../services/notification_service.dart';
 import '../utils/feeling_score_utils.dart';
 import '../utils/mood_analyzer.dart';
+import '../utils/date_format_utils.dart';
 import 'add_entry_screen.dart';
 import 'settings_screen.dart';
 import '../widgets/timeline_view.dart';
@@ -27,12 +28,21 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   LogEntry? _epitaphEntry;
   bool _hasShownLowMoodCare = false;
+  String _timeFormat = 'default';
 
   @override
   void initState() {
     super.initState();
     _notificationService.initialize();
+    _loadTimeFormat();
     _loadEntries();
+  }
+
+  Future<void> _loadTimeFormat() async {
+    final format = await DateFormatUtils.getTimeFormat();
+    setState(() {
+      _timeFormat = format;
+    });
   }
 
   Future<void> _loadEntries() async {
@@ -148,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return ListTile(
                 leading: Text(entry.mood, style: const TextStyle(fontSize: 24)),
                 title: Text(entry.event, maxLines: 2, overflow: TextOverflow.ellipsis),
-                subtitle: Text(DateFormat('MMM dd, yyyy').format(entry.timestamp)),
+                subtitle: Text(DateFormatUtils.formatDate(entry.timestamp, _timeFormat)),
                 trailing: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
@@ -203,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    DateFormat('MMM dd, yyyy HH:mm').format(entry.timestamp),
+                    DateFormatUtils.formatDateTime(entry.timestamp, _timeFormat),
                     style: const TextStyle(fontSize: 16),
                   ),
                   if (isLocked) ...[
@@ -241,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const Icon(Icons.lock_clock, size: 48),
                       const SizedBox(height: 8),
                       Text(
-                        '${l10n.unlocksOn} ${DateFormat('MMM dd, yyyy HH:mm').format(entry.unlockDate!)}',
+                        '${l10n.unlocksOn} ${DateFormatUtils.formatDateTime(entry.unlockDate!, _timeFormat)}',
                         textAlign: TextAlign.center,
                       ),
                     ],

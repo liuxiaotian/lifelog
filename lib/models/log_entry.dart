@@ -11,6 +11,7 @@ class LogEntry {
   final double? latitude; // Location latitude
   final double? longitude; // Location longitude
   final String? locationName; // Human-readable location name
+  final bool isHighlight; // Flag to mark highlight moments
 
   LogEntry({
     required this.id,
@@ -25,6 +26,7 @@ class LogEntry {
     this.latitude,
     this.longitude,
     this.locationName,
+    this.isHighlight = false,
   });
 
   Map<String, dynamic> toJson() {
@@ -41,6 +43,7 @@ class LogEntry {
       'latitude': latitude,
       'longitude': longitude,
       'locationName': locationName,
+      'isHighlight': isHighlight,
     };
   }
 
@@ -64,6 +67,7 @@ class LogEntry {
       latitude: json['latitude'] as double?,
       longitude: json['longitude'] as double?,
       locationName: json['locationName'] as String?,
+      isHighlight: json['isHighlight'] as bool? ?? false,
     );
   }
 }

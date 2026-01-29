@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../models/log_entry.dart';
+import '../utils/date_format_utils.dart';
 
-class TimelineView extends StatelessWidget {
+class TimelineView extends StatefulWidget {
   final List<LogEntry> entries;
   final Function(LogEntry) onEntryTap;
   final LogEntry? epitaphEntry;
@@ -13,6 +13,26 @@ class TimelineView extends StatelessWidget {
     required this.onEntryTap,
     this.epitaphEntry,
   });
+
+  @override
+  State<TimelineView> createState() => _TimelineViewState();
+}
+
+class _TimelineViewState extends State<TimelineView> {
+  String _timeFormat = 'default';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTimeFormat();
+  }
+
+  Future<void> _loadTimeFormat() async {
+    final format = await DateFormatUtils.getTimeFormat();
+    setState(() {
+      _timeFormat = format;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,16 +48,16 @@ class TimelineView extends StatelessWidget {
   }
 
   Widget _buildVerticalTimeline(BuildContext context) {
-    final itemCount = entries.length + (epitaphEntry != null ? 1 : 0);
+    final itemCount = widget.entries.length + (widget.epitaphEntry != null ? 1 : 0);
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: itemCount,
       itemBuilder: (context, index) {
-        if (epitaphEntry != null && index == entries.length) {
+        if (widget.epitaphEntry != null && index == widget.entries.length) {
           // Show epitaph at the end
           return _buildEpitaphItem(context);
         }
-        final entry = entries[index];
+        final entry = widget.entries[index];
         return _buildVerticalTimelineItem(context, entry, index);
       },
     );
@@ -60,11 +80,11 @@ class TimelineView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Text(
-                  DateFormat('HH:mm').format(entry.timestamp),
+                  DateFormatUtils.formatTime(entry.timestamp, _timeFormat),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 Text(
-                  DateFormat('MMM dd').format(entry.timestamp),
+                  DateFormatUtils.formatShortDate(entry.timestamp, _timeFormat),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                   ),
@@ -81,14 +101,27 @@ class TimelineView extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isLocked 
                       ? Colors.grey.shade300 
-                      : Theme.of(context).colorScheme.primaryContainer,
+                      : entry.isHighlight
+                          ? Colors.amber.shade100
+                          : Theme.of(context).colorScheme.primaryContainer,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: isLocked 
                         ? Colors.grey 
-                        : Theme.of(context).colorScheme.primary,
-                    width: 2,
+                        : entry.isHighlight
+                            ? Colors.amber
+                            : Theme.of(context).colorScheme.primary,
+                    width: entry.isHighlight ? 3 : 2,
                   ),
+                  boxShadow: entry.isHighlight
+                      ? [
+                          BoxShadow(
+                            color: Colors.amber.withOpacity(0.5),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Center(
                   child: isLocked 
@@ -99,7 +132,7 @@ class TimelineView extends StatelessWidget {
                         ),
                 ),
               ),
-              if (index < entries.length - 1)
+              if (index < widget.entries.length - 1)
                 Expanded(
                   child: Container(
                     width: 2,
@@ -113,8 +146,12 @@ class TimelineView extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: Card(
+                elevation: entry.isHighlight ? 4 : 1,
+                color: entry.isHighlight 
+                    ? Colors.amber.shade50.withOpacity(0.3) 
+                    : null,
                 child: InkWell(
-                  onTap: () => onEntryTap(entry),
+                  onTap: () => widget.onEntryTap(entry),
                   borderRadius: BorderRadius.circular(12),
                   child: Padding(
                     padding: const EdgeInsets.all(12),
@@ -129,6 +166,8 @@ class TimelineView extends StatelessWidget {
                         ),
                         if (isLocked)
                           const Icon(Icons.lock, size: 16, color: Colors.grey),
+                        if (entry.isHighlight && !isLocked)
+                          const Icon(Icons.star, size: 20, color: Colors.amber),
                       ],
                     ),
                   ),
@@ -149,9 +188,9 @@ class TimelineView extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.all(16),
-            itemCount: entries.length,
+            itemCount: widget.entries.length,
             itemBuilder: (context, index) {
-              final entry = entries[index];
+              final entry = widget.entries[index];
               return _buildHorizontalTimelineItem(context, entry, index);
             },
           ),
@@ -188,7 +227,7 @@ class TimelineView extends StatelessWidget {
           Expanded(
             child: Card(
               child: InkWell(
-                onTap: () => onEntryTap(entry),
+                onTap: () => widget.onEntryTap(entry),
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
                   padding: const EdgeInsets.all(12),
@@ -204,7 +243,7 @@ class TimelineView extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              DateFormat('HH:mm').format(entry.timestamp),
+                              DateFormatUtils.formatTime(entry.timestamp, _timeFormat),
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ),
@@ -212,7 +251,7 @@ class TimelineView extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        DateFormat('MMM dd, yyyy').format(entry.timestamp),
+                        DateFormatUtils.formatDate(entry.timestamp, _timeFormat),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         ),
@@ -265,7 +304,7 @@ class TimelineView extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      epitaphEntry!.mood,
+                      widget.epitaphEntry!.mood,
                       style: const TextStyle(fontSize: 40),
                     ),
                     const SizedBox(width: 16),
@@ -273,7 +312,7 @@ class TimelineView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          DateFormat('MMM dd, yyyy').format(epitaphEntry!.timestamp),
+                          DateFormatUtils.formatDate(widget.epitaphEntry!.timestamp, _timeFormat),
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -284,7 +323,7 @@ class TimelineView extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  epitaphEntry!.event,
+                  widget.epitaphEntry!.event,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     fontStyle: FontStyle.italic,
                   ),
