@@ -79,6 +79,15 @@ class AppLocalizations {
       'failed_to_get_location': 'Failed to get location',
       'location_permission_denied': 'Location permission denied',
       'enable_location_services': 'Please enable location services',
+      'highlight_moment': 'Highlight Moment',
+      'mark_as_highlight': 'Mark as Highlight',
+      'life_highlights': 'Life Highlights',
+      'no_highlights_yet': 'No highlights yet',
+      'event_map': 'Event Map',
+      'no_events_with_location': 'No events with location data',
+      'time_format': 'Time Format',
+      'time_format_default': 'Default (MMM dd, yyyy HH:mm)',
+      'time_format_numeric': 'Numeric (yyyy-MM-dd HH:mm:ss)',
     },
     'zh': {
       'app_title': '人生日志',
@@ -146,6 +155,15 @@ class AppLocalizations {
       'failed_to_get_location': '获取地点失败',
       'location_permission_denied': '地点权限被拒绝',
       'enable_location_services': '请启用地点服务',
+      'highlight_moment': '高光时刻',
+      'mark_as_highlight': '标记为高光',
+      'life_highlights': '人生高光',
+      'no_highlights_yet': '暂无高光记录',
+      'event_map': '事件地图',
+      'no_events_with_location': '暂无带位置的事件',
+      'time_format': '时间格式',
+      'time_format_default': '默认格式（月 日, 年 时:分）',
+      'time_format_numeric': '纯数字（年-月-日 时:分:秒）',
     },
   };
 
@@ -219,6 +237,15 @@ class AppLocalizations {
   String get failedToGetLocation => translate('failed_to_get_location');
   String get locationPermissionDenied => translate('location_permission_denied');
   String get enableLocationServices => translate('enable_location_services');
+  String get highlightMoment => translate('highlight_moment');
+  String get markAsHighlight => translate('mark_as_highlight');
+  String get lifeHighlights => translate('life_highlights');
+  String get noHighlightsYet => translate('no_highlights_yet');
+  String get eventMap => translate('event_map');
+  String get noEventsWithLocation => translate('no_events_with_location');
+  String get timeFormat => translate('time_format');
+  String get timeFormatDefault => translate('time_format_default');
+  String get timeFormatNumeric => translate('time_format_numeric');
 }
 
 class _AppLocalizationsDelegate

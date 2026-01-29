@@ -33,6 +33,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   double? _latitude;
   double? _longitude;
   String? _locationName;
+  bool _isHighlight = false;
 
   final List<String> _moodEmojis = [
     // Happy & Positive
@@ -375,6 +376,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         latitude: _latitude,
         longitude: _longitude,
         locationName: _locationName,
+        isHighlight: _isHighlight,
       );
 
       await _storageService.addEntry(entry);
@@ -655,6 +657,20 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                       )
                     : null,
                 onTap: _getCurrentLocation,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: CheckboxListTile(
+                title: Text(l10n.markAsHighlight),
+                subtitle: Text(l10n.highlightMoment),
+                value: _isHighlight,
+                onChanged: (value) {
+                  setState(() {
+                    _isHighlight = value ?? false;
+                  });
+                },
+                secondary: const Icon(Icons.star, color: Colors.amber),
               ),
             ),
           ],
