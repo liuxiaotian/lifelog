@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../services/storage_service.dart';
+import 'epitaph_settings_screen.dart';
+import 'statistics_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final Function(ThemeMode) onThemeModeChanged;
@@ -138,6 +140,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value: 'system',
             groupValue: _currentThemeMode,
             onChanged: (value) => _setThemeMode(value!),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.show_chart),
+            title: Text(l10n.viewStatistics),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StatisticsScreen(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.edit_note),
+            title: Text(l10n.epitaphSettings),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EpitaphSettingsScreen(),
+                ),
+              );
+            },
           ),
           const Divider(),
           ListTile(

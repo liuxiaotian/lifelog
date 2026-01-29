@@ -22,6 +22,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   DateTime _selectedDateTime = DateTime.now();
   String _selectedMood = '😊';
   List<String> _attachments = [];
+  int? _feelingScore; // 1-10 scale, null means not set
 
   final List<String> _moodEmojis = [
     // Happy & Positive
@@ -242,6 +243,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         mood: _selectedMood,
         event: _eventController.text.trim(),
         attachments: _attachments,
+        feelingScore: _feelingScore,
       );
 
       await _storageService.addEntry(entry);
@@ -323,6 +325,45 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                   );
                 },
               ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.feelingScoreOptional,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Slider(
+                    value: _feelingScore?.toDouble() ?? 5.0,
+                    min: 1.0,
+                    max: 10.0,
+                    divisions: 9,
+                    label: _feelingScore?.toString() ?? '-',
+                    onChanged: (value) {
+                      setState(() {
+                        _feelingScore = value.round();
+                      });
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: 60,
+                  child: Text(
+                    _feelingScore != null ? _feelingScore.toString() : '-',
+                    style: Theme.of(context).textTheme.titleLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: _feelingScore != null
+                      ? () => setState(() => _feelingScore = null)
+                      : null,
+                  tooltip: l10n.cancel,
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             TextFormField(
