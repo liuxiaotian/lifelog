@@ -45,3 +45,4 @@ app.*.map.json
 
 # Gradle build artifacts
 /android/.gradle/
+/android/local.properties
