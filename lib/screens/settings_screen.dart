@@ -157,13 +157,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: const Icon(Icons.edit_note),
             title: Text(l10n.epitaphSettings),
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const EpitaphSettingsScreen(),
                 ),
               );
+              // Trigger home screen refresh if settings were changed
+              if (result == true && mounted) {
+                widget.onClearAll();
+              }
             },
           ),
           const Divider(),

@@ -39,20 +39,15 @@ class _HomeScreenState extends State<HomeScreen> {
     LogEntry? epitaphEntry;
     final epitaphEnabled = await _storageService.isEpitaphEnabled();
     if (epitaphEnabled) {
-      final birthday = await _storageService.getEpitaphBirthday();
-      final lifespan = await _storageService.getEpitaphLifespan();
       final content = await _storageService.getEpitaphContent();
       
-      if (birthday != null && lifespan != null && content != null && content.isNotEmpty) {
-        final expectedEndDate = DateTime(
-          birthday.year + lifespan,
-          birthday.month,
-          birthday.day,
-        );
+      if (content != null && content.isNotEmpty) {
+        // Set to a far future date (100 years from now)
+        final farFutureDate = DateTime.now().add(const Duration(days: 365 * 100));
         epitaphEntry = LogEntry(
           id: 'epitaph',
-          timestamp: expectedEndDate,
-          mood: '🕊️',
+          timestamp: farFutureDate,
+          mood: '🎯',
           event: content,
           isEpitaph: true,
         );
