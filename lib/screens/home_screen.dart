@@ -42,8 +42,13 @@ class _HomeScreenState extends State<HomeScreen> {
       final content = await _storageService.getEpitaphContent();
       
       if (content != null && content.isNotEmpty) {
-        // Set to a far future date (100 years from now)
-        final farFutureDate = DateTime.now().add(const Duration(days: 365 * 100));
+        // Set to a far future date (100 years from now), properly handling leap years
+        final now = DateTime.now();
+        final farFutureDate = DateTime(
+          now.year + 100,
+          now.month,
+          now.day,
+        );
         epitaphEntry = LogEntry(
           id: 'epitaph',
           timestamp: farFutureDate,

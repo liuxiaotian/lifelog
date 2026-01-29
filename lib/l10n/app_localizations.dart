@@ -54,12 +54,8 @@ class AppLocalizations {
       'epitaph': 'Life Goals',
       'epitaph_settings': 'Life Goals Settings',
       'enable_epitaph': 'Enable Life Goals',
-      'birthday': 'Birthday',
-      'expected_lifespan': 'Expected Lifespan (years)',
       'epitaph_content': 'Life Goals',
       'save': 'Save',
-      'please_enter_birthday': 'Please enter your birthday',
-      'please_enter_lifespan': 'Please enter expected lifespan',
       'please_enter_epitaph': 'Please enter your life goals',
       'statistics': 'Statistics',
       'feeling_curve': 'Feeling Curve',
@@ -67,7 +63,6 @@ class AppLocalizations {
       'average_feeling': 'Average',
       'view_statistics': 'View Statistics',
       'recent_entries': 'Recent Entries',
-      'invalid_lifespan': 'Please enter a valid lifespan (1-150)',
     },
     'zh': {
       'app_title': '人生日志',
@@ -110,12 +105,8 @@ class AppLocalizations {
       'epitaph': '人生目标',
       'epitaph_settings': '人生目标设置',
       'enable_epitaph': '启用人生目标',
-      'birthday': '生日',
-      'expected_lifespan': '预期寿命（年）',
       'epitaph_content': '人生目标',
       'save': '保存',
-      'please_enter_birthday': '请输入您的生日',
-      'please_enter_lifespan': '请输入预期寿命',
       'please_enter_epitaph': '请输入您的人生目标',
       'statistics': '统计',
       'feeling_curve': '感受曲线',
@@ -123,7 +114,6 @@ class AppLocalizations {
       'average_feeling': '平均值',
       'view_statistics': '查看统计',
       'recent_entries': '最近记录',
-      'invalid_lifespan': '请输入有效的寿命（1-150）',
     },
   };
 
@@ -172,12 +162,8 @@ class AppLocalizations {
   String get epitaph => translate('epitaph');
   String get epitaphSettings => translate('epitaph_settings');
   String get enableEpitaph => translate('enable_epitaph');
-  String get birthday => translate('birthday');
-  String get expectedLifespan => translate('expected_lifespan');
   String get epitaphContent => translate('epitaph_content');
   String get save => translate('save');
-  String get pleaseEnterBirthday => translate('please_enter_birthday');
-  String get pleaseEnterLifespan => translate('please_enter_lifespan');
   String get pleaseEnterEpitaph => translate('please_enter_epitaph');
   String get statistics => translate('statistics');
   String get feelingCurve => translate('feeling_curve');
@@ -185,7 +171,6 @@ class AppLocalizations {
   String get averageFeeling => translate('average_feeling');
   String get viewStatistics => translate('view_statistics');
   String get recentEntries => translate('recent_entries');
-  String get invalidLifespan => translate('invalid_lifespan');
 }
 
 class _AppLocalizationsDelegate
