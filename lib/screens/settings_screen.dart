@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../l10n/app_localizations.dart';
 import '../services/storage_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -55,22 +56,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _clearAllEntries() async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear All Entries'),
-        content: const Text(
-          'Are you sure you want to delete all log entries? This action cannot be undone.',
-        ),
+        title: Text(l10n.clearAllEntries),
+        content: Text(l10n.clearAllConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete All'),
+            child: Text(l10n.deleteAll),
           ),
         ],
       ),
@@ -81,60 +81,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
       widget.onClearAll();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('All entries cleared')),
+          SnackBar(content: Text(l10n.allEntriesCleared)),
         );
       }
     }
   }
 
   void _showAbout() {
+    final l10n = AppLocalizations.of(context);
     showAboutDialog(
       context: context,
-      applicationName: 'LifeLog',
+      applicationName: l10n.appTitle,
       applicationVersion: '1.0.0',
       applicationIcon: const Icon(Icons.event_note, size: 48),
       children: [
-        const Text(
-          'A simple life logging app to track moments with time, mood, and events.',
-        ),
+        Text(l10n.appDescription),
         const SizedBox(height: 16),
-        const Text('Built with Flutter'),
+        Text(l10n.builtWithFlutter),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(l10n.settings),
       ),
       body: ListView(
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16),
+          Padding(
+            padding: const EdgeInsets.all(16),
             child: Text(
-              'Theme',
-              style: TextStyle(
+              l10n.theme,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
           RadioListTile<String>(
-            title: const Text('Light'),
+            title: Text(l10n.light),
             value: 'light',
             groupValue: _currentThemeMode,
             onChanged: (value) => _setThemeMode(value!),
           ),
           RadioListTile<String>(
-            title: const Text('Dark'),
+            title: Text(l10n.dark),
             value: 'dark',
             groupValue: _currentThemeMode,
             onChanged: (value) => _setThemeMode(value!),
           ),
           RadioListTile<String>(
-            title: const Text('Follow System'),
+            title: Text(l10n.followSystem),
             value: 'system',
             groupValue: _currentThemeMode,
             onChanged: (value) => _setThemeMode(value!),
@@ -142,15 +142,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.info_outline),
-            title: const Text('About'),
+            title: Text(l10n.about),
             onTap: _showAbout,
           ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
-            title: const Text(
-              'Clear All Entries',
-              style: TextStyle(color: Colors.red),
+            title: Text(
+              l10n.clearAllEntries,
+              style: const TextStyle(color: Colors.red),
             ),
             onTap: _clearAllEntries,
           ),

@@ -4,17 +4,29 @@ A simple life logging app built with Flutter to track moments with time, mood, a
 
 ## Features
 
+- **Multilingual Support**: 
+  - English and Simplified Chinese (简体中文)
+  - Automatically follows system language
+
 - **Add New Records**: Create log entries with:
   - Time point (customizable date and time)
-  - Mood emoji selector (25 different emojis)
+  - Mood emoji selector (62 different emojis organized by categories)
   - Event description
+  - Media attachments (photos and videos)
+
+- **Media Capture**:
+  - Take photos with camera
+  - Record videos
+  - Choose from gallery
+  - Preview attachments in entries
 
 - **View All Records**:
   - Portrait mode: Vertical timeline with nodes showing events
   - Landscape mode: Horizontal timeline display
-  - Chronologically ordered entries
+  - Chronologically ordered entries (newest first)
+  - View attachments in detail view
 
-- **View Specific Record**: Tap any entry to view details in a popup dialog
+- **View Specific Record**: Tap any entry to view details with attachments in a popup dialog
 
 - **Delete Records**:
   - Delete individual records with confirmation

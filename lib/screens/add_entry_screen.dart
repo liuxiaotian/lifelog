@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '../l10n/app_localizations.dart';
 import '../models/log_entry.dart';
 import '../services/storage_service.dart';
 
@@ -14,16 +17,30 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   final _formKey = GlobalKey<FormState>();
   final _eventController = TextEditingController();
   final StorageService _storageService = StorageService();
+  final ImagePicker _imagePicker = ImagePicker();
   
   DateTime _selectedDateTime = DateTime.now();
   String _selectedMood = '😊';
+  List<String> _attachments = [];
 
   final List<String> _moodEmojis = [
-    '😊', '😃', '😄', '😁', '😆',
-    '🥰', '😍', '🤩', '😎', '🤗',
-    '😌', '😴', '🤔', '🤨', '😐',
-    '😕', '😟', '😢', '😭', '😡',
-    '🤯', '😱', '😨', '🥺', '😳',
+    // Happy & Positive
+    '😊', '😃', '😄', '😁', '😆', '😂', '🤣',
+    '🥰', '😍', '🤩', '😎', '🤗', '🥳',
+    // Calm & Relaxed
+    '😌', '😴', '🥱', '😪', '😇', '🤓', '🧐',
+    // Thinking & Curious
+    '🤔', '🤨', '😐', '😑', '🙄', '😬', '🤐',
+    // Sad & Upset
+    '😕', '😟', '🙁', '😢', '😭', '😞', '😔',
+    // Angry & Frustrated
+    '😡', '🤬', '😠', '😤', '💢', '😖', '😣',
+    // Surprised & Shocked
+    '🤯', '😱', '😨', '😰', '😳', '🤭', '😲',
+    // Worried & Anxious
+    '🥺', '😥', '😓', '😩', '😫', '🤕', '🤒',
+    // Others
+    '🤡', '🥴', '😵', '🤠', '🥶', '🥵', '😷',
   ];
 
   @override
@@ -46,7 +63,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
       );
 
-      if (time != null) {
+      if (time != null && mounted) {
         setState(() {
           _selectedDateTime = DateTime(
             date.year,
@@ -56,8 +73,165 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
             time.minute,
           );
         });
+      } else if (mounted) {
+        // If only date is selected (time is cancelled), update with the date but keep current time
+        setState(() {
+          _selectedDateTime = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            _selectedDateTime.hour,
+            _selectedDateTime.minute,
+          );
+        });
       }
     }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+      if (image != null && !_attachments.contains(image.path)) {
+        setState(() {
+          _attachments.add(image.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToPickImage)),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickVideoFromGallery() async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      final XFile? video = await _imagePicker.pickVideo(
+        source: ImageSource.gallery,
+        maxDuration: const Duration(minutes: 5),
+      );
+      if (video != null && !_attachments.contains(video.path)) {
+        setState(() {
+          _attachments.add(video.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToPickVideo)),
+        );
+      }
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      final XFile? photo = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+      if (photo != null && !_attachments.contains(photo.path)) {
+        setState(() {
+          _attachments.add(photo.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToTakePhoto)),
+        );
+      }
+    }
+  }
+
+  Future<void> _recordVideo() async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      final XFile? video = await _imagePicker.pickVideo(
+        source: ImageSource.camera,
+        maxDuration: const Duration(minutes: 5),
+      );
+      if (video != null && !_attachments.contains(video.path)) {
+        setState(() {
+          _attachments.add(video.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToRecordVideo)),
+        );
+      }
+    }
+  }
+
+  bool _isVideoFile(String path) {
+    final videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.3gp', '.flv', '.wmv'];
+    final lowercasePath = path.toLowerCase();
+    return videoExtensions.any((ext) => lowercasePath.endsWith(ext));
+  }
+
+  void _removeAttachment(int index) {
+    setState(() {
+      _attachments.removeAt(index);
+    });
+  }
+
+  void _showAttachmentOptions() {
+    final l10n = AppLocalizations.of(context);
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: Text(l10n.chooseFromGallery),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImageFromGallery();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.video_library),
+              title: Text(l10n.chooseVideoFromGallery),
+              onTap: () {
+                Navigator.pop(context);
+                _pickVideoFromGallery();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: Text(l10n.takePhoto),
+              onTap: () {
+                Navigator.pop(context);
+                _takePhoto();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.videocam),
+              title: Text(l10n.recordVideo),
+              onTap: () {
+                Navigator.pop(context);
+                _recordVideo();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _saveEntry() async {
@@ -67,6 +241,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         timestamp: _selectedDateTime,
         mood: _selectedMood,
         event: _eventController.text.trim(),
+        attachments: _attachments,
       );
 
       await _storageService.addEntry(entry);
@@ -79,9 +254,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Entry'),
+        title: Text(l10n.newEntry),
         actions: [
           IconButton(
             icon: const Icon(Icons.check),
@@ -97,7 +273,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
             Card(
               child: ListTile(
                 leading: const Icon(Icons.access_time),
-                title: const Text('Time'),
+                title: Text(l10n.time),
                 subtitle: Text(
                   DateFormat('MMM dd, yyyy HH:mm').format(_selectedDateTime),
                 ),
@@ -105,13 +281,13 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'How are you feeling?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              l10n.howAreYouFeeling,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             SizedBox(
-              height: 200,
+              height: 280,
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 5,
@@ -151,19 +327,99 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _eventController,
-              decoration: const InputDecoration(
-                labelText: 'What happened?',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.whatHappened,
+                border: const OutlineInputBorder(),
                 alignLabelWithHint: true,
               ),
               maxLines: 5,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Please enter an event description';
+                  return l10n.pleaseEnterEvent;
                 }
                 return null;
               },
             ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.attachments,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add_circle_outline),
+                  onPressed: _showAttachmentOptions,
+                  tooltip: l10n.addAttachment,
+                ),
+              ],
+            ),
+            if (_attachments.isNotEmpty)
+              SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _attachments.length,
+                  itemBuilder: (context, index) {
+                    final path = _attachments[index];
+                    final isVideo = _isVideoFile(path);
+                    
+                    return Stack(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: isVideo
+                                ? Center(
+                                    child: Icon(
+                                      Icons.video_library,
+                                      size: 48,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                  )
+                                : Image.file(
+                                    File(path),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Center(
+                                        child: Icon(
+                                          Icons.broken_image,
+                                          size: 48,
+                                          color: Theme.of(context).colorScheme.error,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 0,
+                          right: 8,
+                          child: IconButton(
+                            icon: const Icon(Icons.close, color: Colors.red),
+                            style: IconButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.surface,
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(24, 24),
+                            ),
+                            onPressed: () => _removeAttachment(index),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),
