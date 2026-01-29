@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'screens/home_screen.dart';
-import 'models/log_entry.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

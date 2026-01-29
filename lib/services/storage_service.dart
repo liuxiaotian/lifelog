@@ -6,15 +6,21 @@ class StorageService {
   static const String _storageKey = 'log_entries';
 
   Future<List<LogEntry>> getEntries() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? entriesJson = prefs.getString(_storageKey);
-    
-    if (entriesJson == null) {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? entriesJson = prefs.getString(_storageKey);
+      
+      if (entriesJson == null) {
+        return [];
+      }
+
+      final List<dynamic> decoded = json.decode(entriesJson);
+      return decoded.map((e) => LogEntry.fromJson(e)).toList();
+    } catch (e) {
+      // If there's any error reading or parsing the data, return empty list
+      // This prevents crashes from corrupted data
       return [];
     }
-
-    final List<dynamic> decoded = json.decode(entriesJson);
-    return decoded.map((e) => LogEntry.fromJson(e)).toList();
   }
 
   Future<void> saveEntries(List<LogEntry> entries) async {

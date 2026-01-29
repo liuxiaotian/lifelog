@@ -22,10 +22,12 @@ class LogEntry {
 
   factory LogEntry.fromJson(Map<String, dynamic> json) {
     return LogEntry(
-      id: json['id'],
-      timestamp: DateTime.parse(json['timestamp']),
-      mood: json['mood'],
-      event: json['event'],
+      id: json['id']?.toString() ?? '',
+      timestamp: json['timestamp'] != null 
+          ? DateTime.parse(json['timestamp']) 
+          : DateTime.now(),
+      mood: json['mood']?.toString() ?? '😊',
+      event: json['event']?.toString() ?? '',
     );
   }
 }
