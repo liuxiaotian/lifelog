@@ -63,6 +63,22 @@ class AppLocalizations {
       'average_feeling': 'Average',
       'view_statistics': 'View Statistics',
       'recent_entries': 'Recent Entries',
+      'write_to_future': 'Write to Future',
+      'write_to_future_hint': 'This entry will be locked until the selected date',
+      'unlock_date': 'Unlock Date',
+      'locked_entry': 'Locked',
+      'unlocks_on': 'Unlocks on',
+      'letter_from_past': 'A Letter from the Past',
+      'letter_from_past_body': 'You have a letter from the past that is now unlocked!',
+      'low_mood_care_title': 'Take Care',
+      'low_mood_care_message': 'You\'ve been a bit tired recently. Would you like to review some of your highlight moments?',
+      'view_highlights': 'View Highlights',
+      'location': 'Location',
+      'add_location': 'Add Location',
+      'location_added': 'Location added',
+      'failed_to_get_location': 'Failed to get location',
+      'location_permission_denied': 'Location permission denied',
+      'enable_location_services': 'Please enable location services',
     },
     'zh': {
       'app_title': '人生日志',
@@ -114,6 +130,22 @@ class AppLocalizations {
       'average_feeling': '平均值',
       'view_statistics': '查看统计',
       'recent_entries': '最近记录',
+      'write_to_future': '写给未来',
+      'write_to_future_hint': '此记录将锁定至选定日期',
+      'unlock_date': '解锁日期',
+      'locked_entry': '已锁定',
+      'unlocks_on': '解锁于',
+      'letter_from_past': '来自过去的信',
+      'letter_from_past_body': '你有一封来自过去的信已经解锁了！',
+      'low_mood_care_title': '关怀提醒',
+      'low_mood_care_message': '你最近有点累了，要不要翻看一些高光记录？',
+      'view_highlights': '查看高光记录',
+      'location': '地点',
+      'add_location': '添加地点',
+      'location_added': '地点已添加',
+      'failed_to_get_location': '获取地点失败',
+      'location_permission_denied': '地点权限被拒绝',
+      'enable_location_services': '请启用地点服务',
     },
   };
 
@@ -171,6 +203,22 @@ class AppLocalizations {
   String get averageFeeling => translate('average_feeling');
   String get viewStatistics => translate('view_statistics');
   String get recentEntries => translate('recent_entries');
+  String get writeToFuture => translate('write_to_future');
+  String get writeToFutureHint => translate('write_to_future_hint');
+  String get unlockDate => translate('unlock_date');
+  String get lockedEntry => translate('locked_entry');
+  String get unlocksOn => translate('unlocks_on');
+  String get letterFromPast => translate('letter_from_past');
+  String get letterFromPastBody => translate('letter_from_past_body');
+  String get lowMoodCareTitle => translate('low_mood_care_title');
+  String get lowMoodCareMessage => translate('low_mood_care_message');
+  String get viewHighlights => translate('view_highlights');
+  String get location => translate('location');
+  String get addLocation => translate('add_location');
+  String get locationAdded => translate('location_added');
+  String get failedToGetLocation => translate('failed_to_get_location');
+  String get locationPermissionDenied => translate('location_permission_denied');
+  String get enableLocationServices => translate('enable_location_services');
 }
 
 class _AppLocalizationsDelegate

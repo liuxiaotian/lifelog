@@ -6,6 +6,11 @@ class LogEntry {
   final List<String> attachments;
   final int? feelingScore; // 1-10 scale, optional
   final bool isEpitaph; // Flag to identify epitaph entries
+  final bool isWriteToFuture; // Flag for future letters
+  final DateTime? unlockDate; // Date when future letter can be viewed
+  final double? latitude; // Location latitude
+  final double? longitude; // Location longitude
+  final String? locationName; // Human-readable location name
 
   LogEntry({
     required this.id,
@@ -15,6 +20,11 @@ class LogEntry {
     this.attachments = const [],
     this.feelingScore,
     this.isEpitaph = false,
+    this.isWriteToFuture = false,
+    this.unlockDate,
+    this.latitude,
+    this.longitude,
+    this.locationName,
   });
 
   Map<String, dynamic> toJson() {
@@ -26,6 +36,11 @@ class LogEntry {
       'attachments': attachments,
       'feelingScore': feelingScore,
       'isEpitaph': isEpitaph,
+      'isWriteToFuture': isWriteToFuture,
+      'unlockDate': unlockDate?.toIso8601String(),
+      'latitude': latitude,
+      'longitude': longitude,
+      'locationName': locationName,
     };
   }
 
@@ -42,6 +57,13 @@ class LogEntry {
           : [],
       feelingScore: json['feelingScore'] as int?,
       isEpitaph: json['isEpitaph'] as bool? ?? false,
+      isWriteToFuture: json['isWriteToFuture'] as bool? ?? false,
+      unlockDate: json['unlockDate'] != null 
+          ? DateTime.parse(json['unlockDate']) 
+          : null,
+      latitude: json['latitude'] as double?,
+      longitude: json['longitude'] as double?,
+      locationName: json['locationName'] as String?,
     );
   }
 }

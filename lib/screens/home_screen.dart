@@ -4,7 +4,9 @@ import 'dart:io';
 import '../l10n/app_localizations.dart';
 import '../models/log_entry.dart';
 import '../services/storage_service.dart';
+import '../services/notification_service.dart';
 import '../utils/feeling_score_utils.dart';
+import '../utils/mood_analyzer.dart';
 import 'add_entry_screen.dart';
 import 'settings_screen.dart';
 import '../widgets/timeline_view.dart';
@@ -20,13 +22,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final StorageService _storageService = StorageService();
+  final NotificationService _notificationService = NotificationService();
   List<LogEntry> _entries = [];
   bool _isLoading = true;
   LogEntry? _epitaphEntry;
+  bool _hasShownLowMoodCare = false;
 
   @override
   void initState() {
     super.initState();
+    _notificationService.initialize();
     _loadEntries();
   }
 
@@ -64,6 +69,14 @@ class _HomeScreenState extends State<HomeScreen> {
       _epitaphEntry = epitaphEntry;
       _isLoading = false;
     });
+    
+    // Check for low mood pattern and show care message
+    if (!_hasShownLowMoodCare && MoodAnalyzer.hasLowMoodPattern(entries)) {
+      _hasShownLowMoodCare = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showLowMoodCareDialog();
+      });
+    }
   }
 
   Future<void> _deleteEntry(LogEntry entry) async {
@@ -92,6 +105,79 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _showLowMoodCareDialog() {
+    final l10n = AppLocalizations.of(context);
+    final highlights = MoodAnalyzer.getHighlightEntries(_entries);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.lowMoodCareTitle),
+        content: Text(l10n.lowMoodCareMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          if (highlights.isNotEmpty)
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _showHighlights(highlights);
+              },
+              child: Text(l10n.viewHighlights),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showHighlights(List<LogEntry> highlights) {
+    final l10n = AppLocalizations.of(context);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.viewHighlights),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: highlights.length,
+            itemBuilder: (context, index) {
+              final entry = highlights[index];
+              return ListTile(
+                leading: Text(entry.mood, style: const TextStyle(fontSize: 24)),
+                title: Text(entry.event, maxLines: 2, overflow: TextOverflow.ellipsis),
+                subtitle: Text(DateFormat('MMM dd, yyyy').format(entry.timestamp)),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: FeelingScoreUtils.getColorForScore(entry.feelingScore ?? 5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${entry.feelingScore}/10',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEntryDetails(entry);
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.close),
+          ),
+        ],
+      ),
+    );
+  }
+
   bool _isVideoFile(String path) {
     final videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.3gp', '.flv', '.wmv'];
     final lowercasePath = path.toLowerCase();
@@ -100,6 +186,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showEntryDetails(LogEntry entry) {
     final l10n = AppLocalizations.of(context);
+    final now = DateTime.now();
+    final isLocked = entry.isWriteToFuture && 
+                     entry.unlockDate != null && 
+                     entry.unlockDate!.isAfter(now);
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -108,9 +199,27 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(entry.mood, style: const TextStyle(fontSize: 32)),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                DateFormat('MMM dd, yyyy HH:mm').format(entry.timestamp),
-                style: const TextStyle(fontSize: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    DateFormat('MMM dd, yyyy HH:mm').format(entry.timestamp),
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  if (isLocked) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.lock, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          l10n.lockedEntry,
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
@@ -120,38 +229,72 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(entry.event),
-              if (entry.feelingScore != null) ...[
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Text(
-                      l10n.feelingScore,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
+              if (isLocked) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.lock_clock, size: 48),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${l10n.unlocksOn} ${DateFormat('MMM dd, yyyy HH:mm').format(entry.unlockDate!)}',
+                        textAlign: TextAlign.center,
                       ),
-                      decoration: BoxDecoration(
-                        color: FeelingScoreUtils.getColorForScore(entry.feelingScore!),
-                        borderRadius: BorderRadius.circular(12),
+                    ],
+                  ),
+                ),
+              ] else ...[
+                Text(entry.event),
+                if (entry.feelingScore != null) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Text(
+                        l10n.feelingScore,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      child: Text(
-                        '${entry.feelingScore}/10',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: FeelingScoreUtils.getColorForScore(entry.feelingScore!),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${entry.feelingScore}/10',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-              if (entry.attachments.isNotEmpty) ...[
-                const SizedBox(height: 16),
+                    ],
+                  ),
+                ],
+                if (entry.locationName != null) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          entry.locationName!,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (entry.attachments.isNotEmpty) ...[
+                  const SizedBox(height: 16),
                 Text(
                   l10n.attachments,
                   style: const TextStyle(fontWeight: FontWeight.bold),
@@ -204,6 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                 ),
+              ],
               ],
             ],
           ),

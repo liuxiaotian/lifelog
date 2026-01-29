@@ -44,6 +44,11 @@ class TimelineView extends StatelessWidget {
   }
 
   Widget _buildVerticalTimelineItem(BuildContext context, LogEntry entry, int index) {
+    final now = DateTime.now();
+    final isLocked = entry.isWriteToFuture && 
+                     entry.unlockDate != null && 
+                     entry.unlockDate!.isAfter(now);
+    
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -74,18 +79,24 @@ class TimelineView extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
+                  color: isLocked 
+                      ? Colors.grey.shade300 
+                      : Theme.of(context).colorScheme.primaryContainer,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: isLocked 
+                        ? Colors.grey 
+                        : Theme.of(context).colorScheme.primary,
                     width: 2,
                   ),
                 ),
                 child: Center(
-                  child: Text(
-                    entry.mood,
-                    style: const TextStyle(fontSize: 20),
-                  ),
+                  child: isLocked 
+                      ? const Icon(Icons.lock, size: 20)
+                      : Text(
+                          entry.mood,
+                          style: const TextStyle(fontSize: 20),
+                        ),
                 ),
               ),
               if (index < entries.length - 1)
@@ -107,10 +118,18 @@ class TimelineView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   child: Padding(
                     padding: const EdgeInsets.all(12),
-                    child: Text(
-                      entry.event,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            isLocked ? '***' : entry.event,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (isLocked)
+                          const Icon(Icons.lock, size: 16, color: Colors.grey),
+                      ],
                     ),
                   ),
                 ),
