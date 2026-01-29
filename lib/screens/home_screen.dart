@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
 import '../l10n/app_localizations.dart';
 import '../models/log_entry.dart';
 import '../services/storage_service.dart';
@@ -81,7 +82,70 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         content: SingleChildScrollView(
-          child: Text(entry.event),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(entry.event),
+              if (entry.attachments.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(
+                  l10n.attachments,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 100,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: entry.attachments.length,
+                    itemBuilder: (context, index) {
+                      final path = entry.attachments[index];
+                      final isVideo = path.toLowerCase().endsWith('.mp4') ||
+                          path.toLowerCase().endsWith('.mov') ||
+                          path.toLowerCase().endsWith('.avi');
+                      
+                      return Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: isVideo
+                              ? Center(
+                                  child: Icon(
+                                    Icons.video_library,
+                                    size: 40,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                )
+                              : Image.file(
+                                  File(path),
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Center(
+                                      child: Icon(
+                                        Icons.broken_image,
+                                        size: 40,
+                                        color: Theme.of(context).colorScheme.error,
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
