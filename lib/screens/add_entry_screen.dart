@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import '../l10n/app_localizations.dart';
 import '../models/log_entry.dart';
 import '../services/storage_service.dart';
+import '../services/notification_service.dart';
 
 class AddEntryScreen extends StatefulWidget {
   const AddEntryScreen({super.key});
@@ -17,12 +21,18 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   final _formKey = GlobalKey<FormState>();
   final _eventController = TextEditingController();
   final StorageService _storageService = StorageService();
+  final NotificationService _notificationService = NotificationService();
   final ImagePicker _imagePicker = ImagePicker();
   
   DateTime _selectedDateTime = DateTime.now();
   String _selectedMood = '😊';
   List<String> _attachments = [];
   int? _feelingScore; // 1-10 scale, null means not set
+  bool _isWriteToFuture = false;
+  DateTime? _unlockDate;
+  double? _latitude;
+  double? _longitude;
+  String? _locationName;
 
   final List<String> _moodEmojis = [
     // Happy & Positive
@@ -55,7 +65,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       context: context,
       initialDate: _selectedDateTime,
       firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
+      lastDate: _isWriteToFuture ? DateTime(2100) : DateTime.now(),
     );
 
     if (date != null && mounted) {
@@ -235,18 +245,150 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     );
   }
 
+  Future<void> _selectUnlockDate() async {
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _unlockDate ?? now.add(const Duration(days: 1)),
+      firstDate: now,
+      lastDate: DateTime(2100),
+    );
+
+    if (date != null && mounted) {
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_unlockDate ?? now),
+      );
+
+      if (time != null && mounted) {
+        setState(() {
+          _unlockDate = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            time.hour,
+            time.minute,
+          );
+        });
+      }
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    final l10n = AppLocalizations.of(context);
+    
+    try {
+      // Check location permission
+      var permission = await Permission.location.status;
+      if (permission.isDenied) {
+        permission = await Permission.location.request();
+      }
+
+      if (permission.isDenied || permission.isPermanentlyDenied) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.locationPermissionDenied)),
+          );
+        }
+        return;
+      }
+
+      // Check if location services are enabled
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.enableLocationServices)),
+          );
+        }
+        return;
+      }
+
+      // Get current position
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // Get address from coordinates
+      try {
+        final placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+
+        if (placemarks.isNotEmpty) {
+          final place = placemarks.first;
+          final locationParts = [
+            place.name,
+            place.locality,
+            place.administrativeArea,
+            place.country,
+          ].where((part) => part != null && part.isNotEmpty).toList();
+
+          setState(() {
+            _latitude = position.latitude;
+            _longitude = position.longitude;
+            _locationName = locationParts.join(', ');
+          });
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.locationAdded)),
+            );
+          }
+        }
+      } catch (e) {
+        // If geocoding fails, still save coordinates
+        setState(() {
+          _latitude = position.latitude;
+          _longitude = position.longitude;
+          _locationName = '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.locationAdded)),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToGetLocation)),
+        );
+      }
+    }
+  }
+
   Future<void> _saveEntry() async {
     if (_formKey.currentState!.validate()) {
+      final entryId = DateTime.now().millisecondsSinceEpoch.toString();
       final entry = LogEntry(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: entryId,
         timestamp: _selectedDateTime,
         mood: _selectedMood,
         event: _eventController.text.trim(),
         attachments: _attachments,
         feelingScore: _feelingScore,
+        isWriteToFuture: _isWriteToFuture,
+        unlockDate: _unlockDate,
+        latitude: _latitude,
+        longitude: _longitude,
+        locationName: _locationName,
       );
 
       await _storageService.addEntry(entry);
+      
+      // Schedule notification if it's a future letter
+      if (_isWriteToFuture && _unlockDate != null) {
+        final l10n = AppLocalizations.of(context);
+        await _notificationService.scheduleLetterFromPastNotification(
+          id: entryId.hashCode,
+          scheduledDate: _unlockDate!,
+          title: l10n.letterFromPast,
+          body: l10n.letterFromPastBody,
+        );
+      }
       
       if (mounted) {
         Navigator.pop(context);
@@ -461,6 +603,60 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                   },
                 ),
               ),
+            const SizedBox(height: 16),
+            Card(
+              child: Column(
+                children: [
+                  CheckboxListTile(
+                    title: Text(l10n.writeToFuture),
+                    subtitle: _isWriteToFuture ? Text(l10n.writeToFutureHint) : null,
+                    value: _isWriteToFuture,
+                    onChanged: (value) {
+                      setState(() {
+                        _isWriteToFuture = value ?? false;
+                        if (_isWriteToFuture && _unlockDate == null) {
+                          _unlockDate = DateTime.now().add(const Duration(days: 30));
+                        } else if (!_isWriteToFuture) {
+                          _unlockDate = null;
+                        }
+                      });
+                    },
+                  ),
+                  if (_isWriteToFuture)
+                    ListTile(
+                      leading: const Icon(Icons.lock_clock),
+                      title: Text(l10n.unlockDate),
+                      subtitle: _unlockDate != null
+                          ? Text(DateFormat('MMM dd, yyyy HH:mm').format(_unlockDate!))
+                          : null,
+                      onTap: _selectUnlockDate,
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.location_on),
+                title: Text(l10n.location),
+                subtitle: _locationName != null
+                    ? Text(_locationName!)
+                    : null,
+                trailing: _locationName != null
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _latitude = null;
+                            _longitude = null;
+                            _locationName = null;
+                          });
+                        },
+                      )
+                    : null,
+                onTap: _getCurrentLocation,
+              ),
+            ),
           ],
         ),
       ),
