@@ -8,6 +8,14 @@ allprojects {
 rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+    
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            android {
+                compileSdkVersion 34
+            }
+        }
+    }
 }
 
 tasks.register("clean", Delete) {
